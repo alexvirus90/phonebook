@@ -59,6 +59,7 @@ Ext.application({
 					// I want to add it just there
 					xtype: 'grid',
 					store: store,
+					scope: this,
 					columns: [{
 						text: 'Имя',
 						dataIndex: 'name',
@@ -75,25 +76,34 @@ Ext.application({
 						text: 'Место работы',
 						dataIndex: 'place_of_work',
 						flex: 1
-					}],
-					listeners: {
-						rowdblclick: function (grid, record, tr, rowIndex, e, eOpts) {
-							alert(record.get("name"));
-						}
-					}
+					}, {
+						xtype: 'actioncolumn',
+						width: 50,
+						scope: this,
+						fixed: true,
+						items: [{
+							iconCls: 'btnEdit',
+							handler: this.editContact,
+							tooltip: 'Редактировать'
+						}, {
+							iconCls: 'btnDel',
+							handler: this.btnDelContact,
+							tooltip: 'Удалить'
+						}]
+					}]
 				}]
 			}]
 		});
 	},
 	buildPanel: function (form) {
-		return Ext.create('Ext.panel.Panel',{
+		return Ext.create('Ext.panel.Panel', {
 			region: 'center',
 			split: true,
 			border: false,
 			margins: '3 0 3 3',
 			cmargins: '3 3 3 3',
 			layout: 'fit',
-			bodyStyle:{"background":"red"},
+			bodyStyle: {"background": "red"},
 			items: [form]
 		});
 	},
@@ -118,6 +128,18 @@ Ext.application({
 		this.nav = this.buildPanel(this.form);
 		this.win = this.buildWindow(this.nav, "Добавить контакт");
 		this.win.show();
+	},
+	editContact: function (gr, rInd, e) {
+		console.log('gr1', gr);
+		// gr.getSelectionModel().getAt(rInd);
+		// var record = this.getStore().getSelection();
+		// this.btnEditContact(record, 'Редактировать контакт');
+	},
+	btnEditContact: function (rec, title) {
+		console.log('111', rec, title);
+	},
+	btnDelContact: function () {
+
 	},
 	buildForm: function () {
 		this.formC = Ext.create('Ext.form.Panel', {
