@@ -10,7 +10,7 @@ Ext.require([
 Ext.application({
 	name: 'Phonebook',
 	launch: function () {
-		Ext.define('User', {
+		Ext.define('Contacts', {
 			extend: 'Ext.data.Model',
 			fields: [{
 				name: 'name',
@@ -30,29 +30,13 @@ Ext.application({
 				id: 'settings'
 			}
 		});
-		var store = Ext.create('Ext.data.Store', {
-			model: "User"
+		this.storePB = Ext.create('Ext.data.Store', {
+			model: "Contacts"
 		});
-		store.load();
-		//now add some Searches
-		store.add({
-			name: 'Sencha Touch',
-			surname: 'sdfdsfs',
-			phone: 'ssdfsdfds',
-			place_of_work: "dfgfdgdf"
-		});
-		store.save();
-		// их загрузка из Local Storage
-		/*User.load(1, {
-		 callback: function (model, operation) {
-		 alert('Ник:' + model.get('name'));
-		 alert('Электронная почта:' + model.get('email'));
-		 }
-		 });*/
-		this.grid = this.buildGrid(store);
+		this.storePB.load();
+		this.grid = this.buildGrid(this.storePB);
 	},
 	buildGrid: function (store) {
-		// this.tbar = this.buildTbar();
 		Ext.create('Ext.container.Viewport', {
 			layout: 'border',
 			items: [{
@@ -101,73 +85,92 @@ Ext.application({
 			}]
 		});
 	},
-	btnAddContact: function () {
-		this.form = this.buildForm();
-		//TODO: переделать кнопку
-		this.btnCancel = Ext.create('Ext.button.Button', {
-			text: 'Отмена'
-		}, function (){
-			this.win.close()
-		},this);
-		this.nav = Ext.create('Ext.panel.Panel',{
-			region: 'west',
+	buildPanel: function (form) {
+		return Ext.create('Ext.panel.Panel',{
+			region: 'center',
 			split: true,
-			width: 350,
 			border: false,
 			margins: '3 0 3 3',
 			cmargins: '3 3 3 3',
 			layout: 'fit',
-			scope: this,
-			items: this.form
+			bodyStyle:{"background":"red"},
+			items: [form]
 		});
-		this.win = Ext.create('Ext.window.Window', {
-			height: 200,
-			width: 350,
+	},
+	buildWindow: function (panel, title) {
+		return Ext.create('Ext.window.Window', {
+			height: 230,
+			width: 450,
 			iconCls: 'menu_repo_grid',
 			resizable: true,
 			plain: true,
-			scope: this,
 			layout: 'border',
-			// layout: 'fit',
-			title: "Добавить контакт",
+			title: title,
 			modal: true,
 			closable: false,
 			border: false,
-			items: [this.nav]
+			items: [panel]
 		});
+	},
+	btnAddContact: function () {
+		this.storePB.load();
+		this.form = this.buildForm();
+		this.nav = this.buildPanel(this.form);
+		this.win = this.buildWindow(this.nav, "Добавить контакт");
 		this.win.show();
 	},
 	buildForm: function () {
-		this.nameC = Ext.form.field.Text({
-			allowBlank: false,
-			blankText: "Данное поле не должен быть пустым!",
-			fieldLabel: "Имя",
-			name: "name"
+		this.formC = Ext.create('Ext.form.Panel', {
+			bodyPadding: 10,
+			items: [{
+				xtype: 'textfield',
+				allowBlank: false,
+				blankText: "Данное поле не должен быть пустым!",
+				fieldLabel: "Имя",
+				name: "name"
+			}, {
+				xtype: 'textfield',
+				allowBlank: false,
+				blankText: "Данное поле не должен быть пустым!",
+				fieldLabel: "Фамилия",
+				name: "surname"
+			}, {
+				xtype: 'textfield',
+				allowBlank: false,
+				blankText: "Данное поле не должен быть пустым!",
+				fieldLabel: "Телефон",
+				name: "phone"
+			}, {
+				xtype: 'textfield',
+				allowBlank: false,
+				blankText: "Данное поле не должен быть пустым!",
+				fieldLabel: "Место работы",
+				name: "place_of_work"
+			}],
+			buttons: [{
+				xtype: 'button',
+				scope: this,
+				text: "Сохранить",
+				handler: function () {
+					var values = this.formC.getForm().getFieldValues();
+					this.storePB.add({
+						name: values.name,
+						surname: values.surname,
+						phone: values.phone,
+						place_of_work: values.place_of_work
+					});
+					this.storePB.save();
+					this.win.close()
+				}
+			}, {
+				xtype: 'button',
+				scope: this,
+				text: "Отмена",
+				handler: function () {
+					this.win.close()
+				}
+			}]
 		});
-		this.surnameC = Ext.form.field.Text({
-			allowBlank: false,
-			blankText: "Данное поле не должен быть пустым!",
-			fieldLabel: "Фамилия",
-			name: "surname"
-		});
-		this.phoneC = Ext.form.field.Text({
-			allowBlank: false,
-			blankText: "Данное поле не должен быть пустым!",
-			fieldLabel: "Телефон",
-			name: "phone"
-		});
-		this.placeOfWork = Ext.form.field.Text({
-			allowBlank: false,
-			blankText: "Данное поле не должен быть пустым!",
-			fieldLabel: "Место работы",
-			name: "place_of_work"
-		});
-		this.formVeh = new Ext.form.Panel({
-			border: true,
-			labelWidth: 115,
-			monitorValid: true,
-			items: [this.nameC, this.surnameC, this.phoneC, this.placeOfWork]
-		});
-		return this.formVeh;
+		return this.formC;
 	}
 });
