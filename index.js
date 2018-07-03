@@ -10,9 +10,6 @@ Ext.application({
 		Ext.define('Contacts', {
 			extend: 'Ext.data.Model',
 			fields: [{
-				id: 'id',
-				type: 'int'
-			}, {
 				name: 'name',
 				type: 'string'
 			}, {
@@ -160,27 +157,19 @@ Ext.application({
 	//Сама форма
 	buildForm: function () {
 		this.name = Ext.create('Ext.form.field.Text', {
-			allowBlank: false,
-			blankText: "Данное поле не должен быть пустым!",
 			fieldLabel: "Имя",
 			name: "name"
 		}, this);
 		this.surname = Ext.create('Ext.form.field.Text', {
-			allowBlank: false,
-			blankText: "Данное поле не должен быть пустым!",
 			fieldLabel: "Фамилия",
 			name: "surname"
 		}, this);
 		this.phone = Ext.create('Ext.form.field.Text', {
-			allowBlank: false,
-			blankText: "Данное поле не должен быть пустым!",
-			maskRe: /[1-9]/i, //только числа
+			maskRe: /[0-9]/i, //только числа
 			fieldLabel: "Телефон",
 			name: "phone"
 		}, this);
 		this.place_of_work = Ext.create('Ext.form.field.Text', {
-			allowBlank: false,
-			blankText: "Данное поле не должен быть пустым!",
 			fieldLabel: "Место работы",
 			name: "place_of_work"
 		}, this);
