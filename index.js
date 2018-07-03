@@ -2,10 +2,7 @@ Ext.require([
 	'Ext.grid.*',
 	'Ext.data.*',
 	'Ext.util.*',
-	'Ext.form.*',
-	'Ext.container',
-//    'Ext.state.*',
-	'Ext.grid.filters.Filters'
+	'Ext.form.*'
 ]);
 Ext.application({
 	name: 'Phonebook',
@@ -29,6 +26,7 @@ Ext.application({
 				type: 'string'
 			}]
 		});
+		//Store
 		Ext.define('ContactsStore', {
 			extend: 'Ext.data.Store',
 			model: "Contacts",
@@ -49,7 +47,7 @@ Ext.application({
 				title: 'Контакты',
 				border: false,
 				items: [{
-					xtype: 'toolbar',
+					xtype: 'toolbar',							//Добавляем кнопку для добавления контакта
 					items: [{
 						xtype: 'button',
 						text: 'Добавить контакт',
@@ -61,7 +59,7 @@ Ext.application({
 				region: 'center',
 				collapsible: false,
 				items: [{
-					// I want to add it just there
+					// Добавляем поля
 					xtype: 'grid',
 					store: store,
 					scope: this,
@@ -100,6 +98,7 @@ Ext.application({
 			}]
 		});
 	},
+	//Создаем панель
 	buildPanel: function (form) {
 		return Ext.create('Ext.panel.Panel', {
 			region: 'center',
@@ -112,10 +111,11 @@ Ext.application({
 			items: [form]
 		});
 	},
+	//Создаем окно
 	buildWindow: function (panel, title) {
 		return Ext.create('Ext.window.Window', {
-			height: 230,
-			width: 450,
+			height: 200,
+			width: 320,
 			iconCls: 'menu_repo_grid',
 			resizable: true,
 			plain: true,
@@ -127,13 +127,16 @@ Ext.application({
 			items: [panel]
 		});
 	},
+	//Кнопка "Добавить контакт"
 	btnAddContact: function () {
 		this.storePB.load();
 		this.form = this.buildForm();
+		this.btnSave.enable();
 		this.nav = this.buildPanel(this.form);
 		this.win = this.buildWindow(this.nav, "Добавить контакт");
 		this.win.show();
 	},
+	//Кнопка редактирования данных
 	editContact: function (gr, rInd, e) {
 		var record = gr.getRecord(rInd);
 		this.btnEditContact(record, 'Редактировать контакт');
@@ -141,97 +144,101 @@ Ext.application({
 	btnEditContact: function (rec, title) {
 		this.storePB.load();
 		this.form = this.buildForm();
+		this.btnUpdate.enable();
 		this.form.form.loadRecord(rec);
 		this.nav = this.buildPanel(this.form);
 		this.win = this.buildWindow(this.nav, title);
 		this.win.show();
 	},
+	//Кнопка удаления данных
 	btnDelContact: function (gr, rInd, e) {
 		var record = gr.getRecord(rInd);
 		var recStore = this.storePB.getById(record.id);
 		this.storePB.remove(recStore);
 		this.storePB.save();
-
 	},
+	//Сама форма
 	buildForm: function () {
-		this.formC = Ext.create('Ext.form.Panel', {
-			bodyPadding: 10,
-			items: [{
-				xtype: 'textfield',
-				allowBlank: false,
-				minLength: 1,
-				fieldLabel: "Имя",
-				name: "name"
-			}, {
-				xtype: 'textfield',
-				allowBlank: false,
-				minLength: 1,
-				fieldLabel: "Фамилия",
-				name: "surname"
-			}, {
-				xtype: 'textfield',
-				allowBlank: false,
-				minLength: 1,
-				maskRe: /[1-9]/i, //только числа
-				fieldLabel: "Телефон",
-				name: "phone"
-			}, {
-				xtype: 'textfield',
-				allowBlank: false,
-				minLength: 1,
-				fieldLabel: "Место работы",
-				name: "place_of_work"
-			}],
-			buttons: [{
-				xtype: 'button',
-				disabled: true,
-				scope: this,
-				text: "Добавить",
-				handler: function () {
-					var values = this.formC.getForm().getFieldValues();
-					if (!(values.name === "" || values.surname === "" || values.phone === "" || values.place_of_work === "")) {
-						this.storePB.add({
-							name: values.name,
-							surname: values.surname,
-							phone: values.phone,
-							place_of_work: values.place_of_work
-						});
-						this.storePB.save();
-						this.win.close()
-					} else {
-						alert('Все поля должны быть заполнены!!!')
-					}
-				}
-			}, {
-				xtype: 'button',
-				disabled: true,
-				scope: this,
-				text: "Обновить",
-				handler: function () {
-					var values = this.formC.getForm().getFieldValues();
-					if (!(values.name === "" || values.surname === "" || values.phone === "" || values.place_of_work === "")) {
-						var record = this.formC.form.getRecord();
-						var recStore = this.storePB.getById(record.id);
-						recStore.set({
-							name: values.name,
-							surname: values.surname,
-							phone: values.phone,
-							place_of_work: values.place_of_work
-						});
-						this.storePB.save();
-						this.win.close()
-					} else {
-						alert('Все поля должны быть заполнены!!!')
-					}
-				}
-			}, {
-				xtype: 'button',
-				scope: this,
-				text: "Отмена",
-				handler: function () {
+		this.name = Ext.create('Ext.form.field.Text', {
+			allowBlank: false,
+			blankText: "Данное поле не должен быть пустым!",
+			fieldLabel: "Имя",
+			name: "name"
+		}, this);
+		this.surname = Ext.create('Ext.form.field.Text', {
+			allowBlank: false,
+			blankText: "Данное поле не должен быть пустым!",
+			fieldLabel: "Фамилия",
+			name: "surname"
+		}, this);
+		this.phone = Ext.create('Ext.form.field.Text', {
+			allowBlank: false,
+			blankText: "Данное поле не должен быть пустым!",
+			maskRe: /[1-9]/i, //только числа
+			fieldLabel: "Телефон",
+			name: "phone"
+		}, this);
+		this.place_of_work = Ext.create('Ext.form.field.Text', {
+			allowBlank: false,
+			blankText: "Данное поле не должен быть пустым!",
+			fieldLabel: "Место работы",
+			name: "place_of_work"
+		}, this);
+		this.btnSave = Ext.create('Ext.Button', {
+			disabled: true,
+			scope: this,
+			text: "Добавить",
+			handler: function () {
+				var values = this.formC.getForm().getFieldValues();
+				if (!(values.name === "" || values.surname === "" || values.phone === "" || values.place_of_work === "")) {
+					this.storePB.add({
+						name: values.name,
+						surname: values.surname,
+						phone: values.phone,
+						place_of_work: values.place_of_work
+					});
+					this.storePB.save();
 					this.win.close()
+				} else {
+					alert('Все поля должны быть заполнены!!!')
 				}
-			}]
+			}
+		}, this);
+		this.btnUpdate = Ext.create('Ext.Button', {
+			disabled: true,
+			scope: this,
+			text: "Обновить",
+			handler: function () {
+				var values = this.formC.getForm().getFieldValues();
+				if (!(values.name === "" || values.surname === "" || values.phone === "" || values.place_of_work === "")) {
+					var record = this.formC.form.getRecord();
+					var recStore = this.storePB.getById(record.id);
+					recStore.set({
+						name: values.name,
+						surname: values.surname,
+						phone: values.phone,
+						place_of_work: values.place_of_work
+					});
+					this.storePB.save();
+					this.win.close()
+				} else {
+					alert('Все поля должны быть заполнены!!!')
+				}
+			}
+		}, this);
+		this.btnCancel = Ext.create('Ext.Button', {
+			text: "Отмена",
+			scope: this,
+			handler: function () {
+				this.win.close()
+			}
+		}, this);
+		this.formC = Ext.create('Ext.form.Panel', {
+			bodyStyle: {
+				background: '#DFEAF2'
+			},
+			items: [this.name, this.surname, this.phone, this.place_of_work],
+			buttons: [this.btnSave, this.btnUpdate, this.btnCancel]
 		});
 		return this.formC;
 	}
