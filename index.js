@@ -13,6 +13,9 @@ Ext.application({
 		Ext.define('Contacts', {
 			extend: 'Ext.data.Model',
 			fields: [{
+				id: 'id',
+				type: 'int'
+			}, {
 				name: 'name',
 				type: 'string'
 			}, {
@@ -24,15 +27,17 @@ Ext.application({
 			}, {
 				name: 'place_of_work',
 				type: 'string'
-			}],
+			}]
+		});
+		Ext.define('ContactsStore', {
+			extend: 'Ext.data.Store',
+			model: "Contacts",
 			proxy: {
 				type: 'localstorage',
 				id: 'settings'
 			}
 		});
-		this.storePB = Ext.create('Ext.data.Store', {
-			model: "Contacts"
-		});
+		this.storePB = Ext.create('ContactsStore');
 		this.storePB.load();
 		this.grid = this.buildGrid(this.storePB);
 	},
@@ -130,15 +135,22 @@ Ext.application({
 		this.win.show();
 	},
 	editContact: function (gr, rInd, e) {
-		console.log('gr1', gr);
-		// gr.getSelectionModel().getAt(rInd);
-		// var record = this.getStore().getSelection();
-		// this.btnEditContact(record, 'Редактировать контакт');
+		var record = gr.getRecord(rInd);
+		this.btnEditContact(record, 'Редактировать контакт');
 	},
 	btnEditContact: function (rec, title) {
-		console.log('111', rec, title);
+		this.storePB.load();
+		this.form = this.buildForm();
+		this.form.form.loadRecord(rec);
+		this.nav = this.buildPanel(this.form);
+		this.win = this.buildWindow(this.nav, title);
+		this.win.show();
 	},
-	btnDelContact: function () {
+	btnDelContact: function (gr, rInd, e) {
+		var record = gr.getRecord(rInd);
+		var recStore = this.storePB.getById(record.id);
+		this.storePB.remove(recStore);
+		this.storePB.save();
 
 	},
 	buildForm: function () {
@@ -147,42 +159,70 @@ Ext.application({
 			items: [{
 				xtype: 'textfield',
 				allowBlank: false,
-				blankText: "Данное поле не должен быть пустым!",
+				minLength: 1,
 				fieldLabel: "Имя",
 				name: "name"
 			}, {
 				xtype: 'textfield',
 				allowBlank: false,
-				blankText: "Данное поле не должен быть пустым!",
+				minLength: 1,
 				fieldLabel: "Фамилия",
 				name: "surname"
 			}, {
 				xtype: 'textfield',
 				allowBlank: false,
-				blankText: "Данное поле не должен быть пустым!",
+				minLength: 1,
+				maskRe: /[1-9]/i, //только числа
 				fieldLabel: "Телефон",
 				name: "phone"
 			}, {
 				xtype: 'textfield',
 				allowBlank: false,
-				blankText: "Данное поле не должен быть пустым!",
+				minLength: 1,
 				fieldLabel: "Место работы",
 				name: "place_of_work"
 			}],
 			buttons: [{
 				xtype: 'button',
+				disabled: true,
 				scope: this,
-				text: "Сохранить",
+				text: "Добавить",
 				handler: function () {
 					var values = this.formC.getForm().getFieldValues();
-					this.storePB.add({
-						name: values.name,
-						surname: values.surname,
-						phone: values.phone,
-						place_of_work: values.place_of_work
-					});
-					this.storePB.save();
-					this.win.close()
+					if (!(values.name === "" || values.surname === "" || values.phone === "" || values.place_of_work === "")) {
+						this.storePB.add({
+							name: values.name,
+							surname: values.surname,
+							phone: values.phone,
+							place_of_work: values.place_of_work
+						});
+						this.storePB.save();
+						this.win.close()
+					} else {
+						alert('Все поля должны быть заполнены!!!')
+					}
+				}
+			}, {
+				xtype: 'button',
+				disabled: true,
+				scope: this,
+				text: "Обновить",
+				handler: function () {
+					var values = this.formC.getForm().getFieldValues();
+					if (!(values.name === "" || values.surname === "" || values.phone === "" || values.place_of_work === "")) {
+						var record = this.formC.form.getRecord();
+						var recStore = this.storePB.getById(record.id);
+						recStore.set({
+							name: values.name,
+							surname: values.surname,
+							phone: values.phone,
+							place_of_work: values.place_of_work
+						});
+						this.storePB.save();
+						this.win.close()
+					} else {
+						alert('Все поля должны быть заполнены!!!')
+					}
 				}
 			}, {
 				xtype: 'button',
