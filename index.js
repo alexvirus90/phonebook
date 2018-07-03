@@ -1,9 +1,9 @@
-Ext.require([
+/*Ext.require([
 	'Ext.grid.*',
 	'Ext.data.*',
 	'Ext.util.*',
 	'Ext.form.*'
-]);
+]);*/
 Ext.application({
 	name: 'Phonebook',
 	launch: function () {
